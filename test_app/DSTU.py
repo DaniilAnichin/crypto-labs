@@ -157,9 +157,12 @@ INV_PI = [[
 ]]
 
 
-class DSTU2014:
-    def __init__(self, key):
+class DSTU2014Cipher:
+    def __init__(self, key, mode):
+        if isinstance(key, str):
+            key = bytes(key, 'utf-8')
         self._key = key
+        self.mode = mode
 
         self.pi = PI
         self.piinvr = INV_PI
@@ -172,6 +175,9 @@ class DSTU2014:
         self.keyexpansion(key)
 
     def encrypt(self, raw):
+        if isinstance(raw, str):
+            raw = bytes(raw, 'utf-8')
+
         state = self.key_add(self.roundkeys[0], raw)
         for i in range(1, 10):
             state = self.sbox(state)
@@ -182,9 +188,12 @@ class DSTU2014:
         state = self.srow(state)
         state = self.mcol(state)
         state = self.key_add(self.roundkeys[10], state)
-        return state
+        return b''.join([e.to_bytes(1, 'big') for e in state])
 
     def decrypt(self, enc):
+        if isinstance(enc, str):
+            enc = bytes(enc, 'utf-8')
+
         state = self.key_sub(enc, self.roundkeys[10])
         state = self.mcol_inv(state)
         state = self.srow(state)
@@ -195,7 +204,7 @@ class DSTU2014:
             state = self.srow(state)
             state = self.sbox_inv(state)
         state = self.key_sub(state, self.roundkeys[0])
-        return state
+        return b''.join([e.to_bytes(1, 'big') for e in state])
 
     # XOR x and y byte array
     def xor(self, x, y):

@@ -20,6 +20,7 @@ nav.register_element(
     'frontend_top',
     Navbar(
         View('TestApp', '.index'),
+        View('De/En code', '.deencrypt'),
     )
 )
 
@@ -27,6 +28,12 @@ nav.register_element(
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/deencrypt/', methods=['GET', 'POST'])
+def deencrypt():
+    form = DeencryptForm(request.form)
+    return render_template('deencrypt.html', form=form)
 
 
 if __name__ == '__main__':

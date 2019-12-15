@@ -30,12 +30,18 @@ admin = Admin(app)
 
 
 class CorrectWTFormsRenderer(WTFormsRenderer):
-    def _wrapped_input(
-            self, node, type='text', classes=['form-control'], **kwargs,
-    ):
+    """Need to fix incorrect class passing to wtf form on bootstrap render"""
+    def _wrapped_input(self, node, type='text', classes=['form-control'], **kwargs):
         wrap = self._get_wrap(node)
         wrap.add(tags.label(node.label.text, _for=node.id))
-        wrap.add(tags.input(type=type, _class=' '.join(classes), name=node.name, **kwargs))
+        wrap.add(tags.input(type=type, _class=' '.join(classes), name=node.name, value=node.data, **kwargs))  # Added name=node.name
+        return wrap
+
+    def visit_BooleanField(self, node):
+        wrap = self._get_wrap(node, classes='checkbox')
+        label = wrap.add(tags.label(_for=node.id))
+        label.add(tags.input(type='checkbox', name=node.name))  # Added name=node.name
+        label.add(node.label.text)
         return wrap
 
 
